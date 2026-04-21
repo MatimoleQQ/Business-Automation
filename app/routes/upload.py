@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
+from app.services.gmail_sender import send_gmail
 import os
 
 from app.services.processor import process_file
@@ -20,13 +21,22 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
-    # 1. analiza
+    # Analysis
     analysis = process_file(file_path)
 
 
-    # 2. raport PDF
+    # PDF Report
     report_path = os.path.join(REPORT_DIR, f"{file.filename}_report.pdf")
     generate_pdf_report(file.filename, analysis, report_path)
+
+    # Sending Mail
+    send_gmail(
+        receiver="witmar6204@gmail.com",
+        subject="Business Report Ready",
+        body="Attached is your report.",
+        attachment_path=report_path
+    )
+
     return {
         "message": "File processed and report generated",
         "analysis": analysis,

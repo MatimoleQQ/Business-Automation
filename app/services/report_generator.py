@@ -1,32 +1,43 @@
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
-def generate_pdf_report(file_name: str, analysis: dict, output_path: str):
+
+def generate_pdf_report(file_name, analysis, output_path):
     doc = SimpleDocTemplate(output_path)
     styles = getSampleStyleSheet()
 
     content = []
 
-    content.append(Paragraph(f"Report for: {file_name}", styles["Title"]))
+    # HEADER
+    content.append(Paragraph("BUSINESS REPORT", styles["Title"]))
+    content.append(Paragraph(f"File: {file_name}", styles["Normal"]))
     content.append(Spacer(1, 12))
 
+    # SUMMARY
+    content.append(Paragraph("EXECUTIVE SUMMARY", styles["Heading2"]))
+    content.append(Paragraph(
+        "This report provides automated analysis of uploaded dataset.",
+        styles["Normal"]
+    ))
+    content.append(Spacer(1, 12))
+
+    # METRICS
+    content.append(Paragraph("BUSINESS METRICS", styles["Heading2"]))
     content.append(Paragraph(f"Rows: {analysis['rows']}", styles["Normal"]))
     content.append(Paragraph(f"Columns: {analysis['columns']}", styles["Normal"]))
-    content.append(Paragraph(f"Column names: {analysis['column_names']}", styles["Normal"]))
-    content.append(Paragraph(f"Missing values: {analysis['missing_values']}", styles["Normal"]))
+    content.append(Spacer(1, 12))
 
+    # DATA QUALITY
+    content.append(Paragraph("DATA QUALITY", styles["Heading2"]))
+    content.append(Paragraph(str(analysis["missing_values"]), styles["Normal"]))
+    content.append(Spacer(1, 12))
+
+    # INSIGHTS
     content.append(Paragraph("INSIGHTS", styles["Heading2"]))
-    content.append(Spacer(1, 10))
-
-    insights = analysis.get("insights", [])
-
-    if insights:
-        for i in insights:
-            content.append(Paragraph(f"• {i}", styles["Normal"]))
-    else:
-        content.append(Paragraph("No insights generated", styles["Normal"]))
+    for i in analysis.get("insights", []):
+        content.append(Paragraph(f"• {i}", styles["Normal"]))
 
     doc.build(content)
-
-    return output_path

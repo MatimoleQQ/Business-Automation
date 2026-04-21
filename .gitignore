@@ -4,3 +4,6 @@ scripts/
 include/
 pyvenv.cfg
 .idea/
+secrets/
+credentials.json
+token.json
