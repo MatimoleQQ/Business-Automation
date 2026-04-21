@@ -16,6 +16,17 @@ def generate_pdf_report(file_name: str, analysis: dict, output_path: str):
     content.append(Paragraph(f"Column names: {analysis['column_names']}", styles["Normal"]))
     content.append(Paragraph(f"Missing values: {analysis['missing_values']}", styles["Normal"]))
 
+    content.append(Paragraph("INSIGHTS", styles["Heading2"]))
+    content.append(Spacer(1, 10))
+
+    insights = analysis.get("insights", [])
+
+    if insights:
+        for i in insights:
+            content.append(Paragraph(f"• {i}", styles["Normal"]))
+    else:
+        content.append(Paragraph("No insights generated", styles["Normal"]))
+
     doc.build(content)
 
     return output_path

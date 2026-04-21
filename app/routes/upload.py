@@ -23,10 +23,10 @@ async def upload_file(file: UploadFile = File(...)):
     # 1. analiza
     analysis = process_file(file_path)
 
+
     # 2. raport PDF
     report_path = os.path.join(REPORT_DIR, f"{file.filename}_report.pdf")
     generate_pdf_report(file.filename, analysis, report_path)
-
     return {
         "message": "File processed and report generated",
         "analysis": analysis,
