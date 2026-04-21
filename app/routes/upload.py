@@ -1,6 +1,8 @@
 from fastapi import APIRouter, UploadFile, File
 import os
 
+from app.services.processor import process_file
+
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
@@ -14,7 +16,11 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
+    # 🔥 ANALIZA PLIKU
+    result = process_file(file_path)
+
     return {
-        "message": "File uploaded successfully",
-        "filename": file.filename
+        "message": "File uploaded and processed",
+        "filename": file.filename,
+        "analysis": result
     }
