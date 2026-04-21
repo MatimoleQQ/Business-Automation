@@ -2,11 +2,15 @@ from fastapi import APIRouter, UploadFile, File
 import os
 
 from app.services.processor import process_file
+from app.services.report_generator import generate_pdf_report
 
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
+REPORT_DIR = "reports"
+
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(REPORT_DIR, exist_ok=True)
 
 
 @router.post("/")
@@ -16,11 +20,15 @@ async def upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
-    # 🔥 ANALIZA PLIKU
-    result = process_file(file_path)
+    # 1. analiza
+    analysis = process_file(file_path)
+
+    # 2. raport PDF
+    report_path = os.path.join(REPORT_DIR, f"{file.filename}_report.pdf")
+    generate_pdf_report(file.filename, analysis, report_path)
 
     return {
-        "message": "File uploaded and processed",
-        "filename": file.filename,
-        "analysis": result
+        "message": "File processed and report generated",
+        "analysis": analysis,
+        "report": report_path
     }
