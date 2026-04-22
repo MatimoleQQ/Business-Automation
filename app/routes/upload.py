@@ -1,9 +1,13 @@
 from fastapi import APIRouter, UploadFile, File
-from app.services.gmail_sender import send_gmail
-import os
-
+from app.services.email_sender import send_gmail
+from app.database.db import save_report
 from app.services.processor import process_file
 from app.services.report_generator import generate_pdf_report
+from datetime import datetime
+
+
+import os
+
 
 router = APIRouter()
 
@@ -18,6 +22,7 @@ os.makedirs(REPORT_DIR, exist_ok=True)
 async def upload_file(file: UploadFile = File(...)):
     file_path = os.path.join(UPLOAD_DIR, file.filename)
 
+
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
@@ -26,10 +31,15 @@ async def upload_file(file: UploadFile = File(...)):
 
 
     # PDF Report
-    report_path = os.path.join(REPORT_DIR, f"{file.filename}_report.pdf")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    report_path = f"reports/{file.filename}_{timestamp}.pdf"
     generate_pdf_report(file.filename, analysis, report_path)
 
-    # Sending Mail
+    # Save Report
+    save_report(file.filename, report_path)
+
+    # Send Mail
     send_gmail(
         receiver="witmar6204@gmail.com",
         subject="Business Report Ready",
