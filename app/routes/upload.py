@@ -4,8 +4,8 @@ from app.database.db import save_report
 from app.services.processor import process_file
 from app.services.report_generator import generate_pdf_report
 from datetime import datetime
-
-
+from app.models.report import Report
+from app.database.db import save_report
 import os
 
 
@@ -29,6 +29,16 @@ async def upload_file(file: UploadFile = File(...)):
     # Analysis
     analysis = process_file(file_path)
 
+    # Report
+    report = Report(
+        filename=file.filename,
+        rows=analysis["rows"],
+        columns=analysis["columns"],
+        column_names=analysis["column_names"],
+        missing_values=analysis["missing_values"],
+        pdf_path=report_path
+    )
+    save_report(report)
 
     # PDF Report
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -48,7 +58,11 @@ async def upload_file(file: UploadFile = File(...)):
     )
 
     return {
-        "message": "File processed and report generated",
-        "analysis": analysis,
-        "report": report_path
+        "message": "File processed successfully",
+        "report": {
+            "filename": report.filename,
+            "rows": report.rows,
+            "columns": report.columns,
+            "pdf": report.pdf_path
+        }
     }

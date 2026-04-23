@@ -2,6 +2,10 @@ import sqlite3
 
 DB_PATH = "app/database/reports.db"
 
+REPORTS_DB = []
+
+def save_report(report):
+    REPORTS_DB.append(report)
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
