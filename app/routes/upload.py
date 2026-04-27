@@ -1,6 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
 from app.services.email_sender import send_gmail
-from app.database.db import save_report
 from app.services.processor import process_file
 from app.services.report_generator import generate_pdf_report
 from datetime import datetime

@@ -1,22 +1,26 @@
 from fastapi import APIRouter
-from app.database.db import REPORTS_DB
+from app.database.db import get_reports
+import json
 
 router = APIRouter()
 
 @router.get("/dashboard")
 def dashboard():
+    data = get_reports()
+
     return {
-        "total_reports": len(REPORTS_DB),
+        "total_reports": len(data),
         "reports": [
             {
-                "filename": r.filename,
-                "rows": r.rows,
-                "columns": r.columns,
-                "column_names": r.column_names,
-                "missing_values": r.missing_values,
-                "pdf_path": r.pdf_path,
-                "created_at": r.created_at
+                "id": r[0],
+                "filename": r[1],
+                "rows": r[2],
+                "columns": r[3],
+                "column_names": json.loads(r[4]),
+                "missing_values": json.loads(r[5]),
+                "pdf_path": r[6],
+                "created_at": r[7],
             }
-            for r in REPORTS_DB
+            for r in data
         ]
     }
