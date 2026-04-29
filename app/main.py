@@ -2,12 +2,23 @@ from fastapi import FastAPI
 from app.routes import auth, upload, reports
 from app.database.db import init_db
 from app.routes import dashboard
-
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="Business Automation System",
     version="1.0.0"
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/reports", StaticFiles(directory="reports"), name="reports")
 
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(upload.router, prefix="/upload", tags=["Upload"])
@@ -17,6 +28,7 @@ app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
 
 app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
 init_db()
+
 
 @app.get("/")
 def home():

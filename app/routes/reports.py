@@ -14,13 +14,13 @@ def list_reports():
         {
             "id": r[0],
             "file_name": r[1],
-            "report_path": r[2],
-            "created_at": r[3],
+            "rows": r[2],
+            "columns": r[3],
+            "report_path": r[6],
+            "created_at": r[7],
         }
         for r in reports
     ]
-
-
 @router.get("/download/{report_id}")
 def download_report(report_id: int):
     reports = get_reports()

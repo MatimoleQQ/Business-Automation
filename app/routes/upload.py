@@ -7,16 +7,17 @@ from app.models.report import Report
 from app.database.db import save_report
 import os
 
-
+print("1 start")
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
 REPORT_DIR = "reports"
 
+
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(REPORT_DIR, exist_ok=True)
 
-
+print("config done")
 @router.post("/")
 async def upload_file(file: UploadFile = File(...)):
     file_path = os.path.join(UPLOAD_DIR, file.filename)
@@ -27,8 +28,24 @@ async def upload_file(file: UploadFile = File(...)):
 
     # Analysis
     analysis = process_file(file_path)
+    print("2 analysis ok")
 
-    # Report
+    # Timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # PDF Path
+    report_path = f"reports/{file.filename}_{timestamp}.pdf"
+    report_path = str(report_path)
+
+
+    # PDF Generate
+    generate_pdf_report(file.filename, analysis, report_path)
+    print("3 pdf ok")
+
+    print("analysis:", analysis)
+    print("report_path:", report_path)
+
+    # Report Save
     report = Report(
         filename=file.filename,
         rows=analysis["rows"],
@@ -37,16 +54,9 @@ async def upload_file(file: UploadFile = File(...)):
         missing_values=analysis["missing_values"],
         pdf_path=report_path
     )
+
     save_report(report)
-
-    # PDF Report
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    report_path = f"reports/{file.filename}_{timestamp}.pdf"
-    generate_pdf_report(file.filename, analysis, report_path)
-
-    # Save Report
-    save_report(file.filename, report_path)
+    print("4 db ok")
 
     # Send Mail
     send_gmail(
