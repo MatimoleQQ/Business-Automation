@@ -5,6 +5,8 @@ from app.routes import dashboard
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+print("🔥 MAIN STARTED")
+
 app = FastAPI(
     title="Business Automation System",
     version="1.0.0"
@@ -22,12 +24,13 @@ app.mount("/reports", StaticFiles(directory="reports"), name="reports")
 
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(upload.router, prefix="/upload", tags=["Upload"])
-app.include_router(reports.router, prefix="/reports", tags=["Reports"])
+app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
 
-
-app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
 init_db()
+@app.get("/ping")
+def ping():
+    return {"ok": True}
 
 
 @app.get("/")

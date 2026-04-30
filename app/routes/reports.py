@@ -4,7 +4,7 @@ from app.database.db import get_reports
 import os
 
 router = APIRouter()
-
+print("🔥 REPORTS ROUTER LOADED")
 
 @router.get("/")
 def list_reports():
