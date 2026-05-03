@@ -1,12 +1,18 @@
 import sqlite3
 import json
+import os
 from app.models.report import Report
 
-DB_NAME = "app.db"
 
+DB_NAME = "reports.db"
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "reports.db")
+
+def get_connection():
+    return sqlite3.connect(DB_PATH)
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -24,10 +30,11 @@ def init_db():
 
     conn.commit()
     conn.close()
+    print("🔥 DB READY")
 
 
 def save_report(report: Report):
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -50,7 +57,7 @@ def save_report(report: Report):
 
 
 def get_reports():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM reports")
@@ -58,3 +65,11 @@ def get_reports():
 
     conn.close()
     return rows
+
+def delete_report_by_id(report_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM reports WHERE id = ?", (report_id,))
+    conn.commit()
+    conn.close()

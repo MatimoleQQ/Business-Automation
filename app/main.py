@@ -4,8 +4,13 @@ from app.database.db import init_db
 from app.routes import dashboard
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from app.database.db import init_db
+
 
 print("🔥 MAIN STARTED")
+
+
+init_db()
 
 app = FastAPI(
     title="Business Automation System",

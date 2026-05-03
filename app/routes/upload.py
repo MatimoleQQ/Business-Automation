@@ -59,12 +59,12 @@ async def upload_file(file: UploadFile = File(...)):
     print("4 db ok")
 
     # Send Mail
-    send_gmail(
-        receiver="witmar6204@gmail.com",
-        subject="Business Report Ready",
-        body="Attached is your report.",
-        attachment_path=report_path
-    )
+    # send_gmail(
+    #     receiver="witmar6204@gmail.com",
+    #     subject="Business Report Ready",
+    #     body="Attached is your report.",
+    #     attachment_path=report_path
+    # )
 
     return {
         "message": "File processed successfully",

@@ -39,3 +39,23 @@ def download_report(report_id: int):
             raise HTTPException(status_code=404, detail="PDF file not found")
 
     raise HTTPException(status_code=404, detail="Report not found")
+
+@router.delete("/{report_id}")
+def delete_report(report_id: int):
+    reports = get_reports()
+
+    for report in reports:
+        if report[0] == report_id:
+            file_path = report[6]
+
+            # usuń PDF
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+            # usuń z DB
+            from app.database.db import delete_report_by_id
+            delete_report_by_id(report_id)
+
+            return {"message": "Deleted"}
+
+    raise HTTPException(status_code=404, detail="Report not found")

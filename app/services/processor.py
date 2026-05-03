@@ -1,11 +1,16 @@
 import pandas as pd
+import os
 
 
 def process_file(file_path: str):
-    if file_path.endswith(".csv"):
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext == ".csv":
         df = pd.read_csv(file_path)
+    elif ext in [".xlsx", ".xls"]:
+        df = pd.read_excel(file_path, engine="openpyxl")
     else:
-        df = pd.read_excel(file_path)
+        raise ValueError("Unsupported file type")
 
     analysis = {
         "rows": len(df),
