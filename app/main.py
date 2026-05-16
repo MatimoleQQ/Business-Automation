@@ -1,25 +1,27 @@
 from fastapi import FastAPI
-from app.routes import auth, upload, reports
-from app.database.db import init_db
-from app.routes import dashboard
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.database.db import init_db
+from fastapi.responses import FileResponse
 
 
-print("🔥 MAIN STARTED")
+from app.routes import auth, upload, reports, dashboard
+from app.database.db import Base, engine
+from app.models import report, user
 
-
-init_db()
+print("MAIN STARTED")
 
 app = FastAPI(
     title="Business Automation System",
     version="1.0.0"
 )
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,11 +34,11 @@ app.include_router(upload.router, prefix="/upload", tags=["Upload"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
 
-init_db()
+Base.metadata.create_all(bind=engine)
+
 @app.get("/ping")
 def ping():
     return {"ok": True}
-
 
 @app.get("/")
 def home():

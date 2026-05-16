@@ -1,10 +1,13 @@
-from sqlalchemy import Column, Integer, String
-from app.database import Base
+from sqlalchemy import Column, Integer, String, JSON
+from app.database.db import Base
 
-
-class User(Base):
-    __tablename__ = "users"
+class Report(Base):
+    __tablename__ = "reports"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    file_name = Column(String)
+    rows = Column(Integer)
+    columns = Column(Integer)
+    column_names = Column(JSON)
+    missing_values = Column(JSON)
+    pdf_path = Column(String)

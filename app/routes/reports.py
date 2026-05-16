@@ -1,61 +1,71 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
-from app.database.db import get_reports
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database.db import get_db
+from app.models.report import Report
 import os
 
 router = APIRouter()
-print("🔥 REPORTS ROUTER LOADED")
 
+
+# =====================
+# GET ALL REPORTS
+# =====================
 @router.get("/")
-def list_reports():
-    reports = get_reports()
+def get_reports(db: Session = Depends(get_db)):
+    reports = db.query(Report).all()
 
     return [
         {
-            "id": r[0],
-            "file_name": r[1],
-            "rows": r[2],
-            "columns": r[3],
-            "report_path": r[6],
-            "created_at": r[7],
+            "id": r.id,
+            "file_name": r.file_name,
+            "pdf_url": f"/reports/{os.path.basename(r.pdf_path)}" if r.pdf_path else None,
+            "csv_url": f"/reports/{os.path.basename(r.csv_path)}" if hasattr(r, "csv_path") and r.csv_path else None,
+            "created_at": getattr(r, "created_at", None),
         }
         for r in reports
     ]
-@router.get("/download/{report_id}")
-def download_report(report_id: int):
-    reports = get_reports()
 
-    for report in reports:
-        if report[0] == report_id:
-            file_path = report[2]
 
-            if os.path.exists(file_path):
-                return FileResponse(
-                    path=file_path,
-                    filename=os.path.basename(file_path),
-                    media_type="application/pdf"
-                )
+# =====================
+# DOWNLOAD PDF (optional endpoint)
+# =====================
+@router.get("/{report_id}/download")
+def download_report(report_id: int, db: Session = Depends(get_db)):
+    report = db.query(Report).filter(Report.id == report_id).first()
 
-            raise HTTPException(status_code=404, detail="PDF file not found")
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
 
-    raise HTTPException(status_code=404, detail="Report not found")
+    if not report.pdf_path:
+        raise HTTPException(status_code=404, detail="No PDF")
 
+    if not os.path.exists(report.pdf_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+
+    return FileResponse(
+        report.pdf_path,
+        media_type="application/pdf",
+        filename=os.path.basename(report.pdf_path)
+    )
+
+
+
+
+# =====================
+# DELETE REPORT
+# =====================
 @router.delete("/{report_id}")
-def delete_report(report_id: int):
-    reports = get_reports()
+def delete_report(report_id: int, db: Session = Depends(get_db)):
+    report = db.query(Report).filter(Report.id == report_id).first()
 
-    for report in reports:
-        if report[0] == report_id:
-            file_path = report[6]
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
 
-            # usuń PDF
-            if os.path.exists(file_path):
-                os.remove(file_path)
+    # usuń plik PDF
+    if report.pdf_path and os.path.exists(report.pdf_path):
+        os.remove(report.pdf_path)
 
-            # usuń z DB
-            from app.database.db import delete_report_by_id
-            delete_report_by_id(report_id)
+    db.delete(report)
+    db.commit()
 
-            return {"message": "Deleted"}
-
-    raise HTTPException(status_code=404, detail="Report not found")
+    return {"message": "deleted"}

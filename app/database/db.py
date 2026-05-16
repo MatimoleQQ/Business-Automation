@@ -1,75 +1,33 @@
-import sqlite3
-import json
 import os
-from app.models.report import Report
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+DB_DIR = os.path.join(BASE_DIR, "app", "database")
+os.makedirs(DB_DIR, exist_ok=True)
+
+db_path = os.path.join(DB_DIR, "app.db")
+
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
 
 
-DB_NAME = "reports.db"
+print("📦 DB PATH:", db_path)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "reports.db")
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
 
-def get_connection():
-    return sqlite3.connect(DB_PATH)
-def init_db():
-    conn = get_connection()
-    cursor = conn.cursor()
+SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS reports (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        filename TEXT,
-        rows INTEGER,
-        columns INTEGER,
-        column_names TEXT,
-        missing_values TEXT,
-        pdf_path TEXT,
-        created_at TEXT
-    )
-    """)
+Base = declarative_base()
 
-    conn.commit()
-    conn.close()
-    print("🔥 DB READY")
-
-
-def save_report(report: Report):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    INSERT INTO reports (
-        filename, rows, columns, column_names,
-        missing_values, pdf_path, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        report.filename,
-        report.rows,
-        report.columns,
-        json.dumps(report.column_names),
-        json.dumps(report.missing_values),
-        report.pdf_path,
-        report.created_at
-    ))
-
-    conn.commit()
-    conn.close()
-
-
-def get_reports():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM reports")
-    rows = cursor.fetchall()
-
-    conn.close()
-    return rows
-
-def delete_report_by_id(report_id):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM reports WHERE id = ?", (report_id,))
-    conn.commit()
-    conn.close()
+print("DB URL:", SQLALCHEMY_DATABASE_URL)
+print("DB FILE:", db_path)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

@@ -1,77 +1,64 @@
-from fastapi import APIRouter, UploadFile, File
-from app.services.email_sender import send_gmail
-from app.services.processor import process_file
-from app.services.report_generator import generate_pdf_report
+from fastapi import APIRouter, UploadFile, File, Depends
+from sqlalchemy.orm import Session
 from datetime import datetime
-from app.models.report import Report
-from app.database.db import save_report
+import shutil
 import os
 
-print("1 start")
+from app.models.report import Report
+from app.database.db import get_db
+from app.services.processor import process_file
+from app.services.report_generator import generate_pdf_report
+
 router = APIRouter()
 
-UPLOAD_DIR = "uploads"
-REPORT_DIR = "reports"
 
-
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(REPORT_DIR, exist_ok=True)
-
-print("config done")
 @router.post("/")
-async def upload_file(file: UploadFile = File(...)):
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
+async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    import os
+    import shutil
+    from datetime import datetime
 
+    os.makedirs("reports", exist_ok=True)
 
-    with open(file_path, "wb") as buffer:
-        buffer.write(await file.read())
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-    # Analysis
-    analysis = process_file(file_path)
-    print("2 analysis ok")
+    # --- CSV PATH ---
+    csv_path = f"reports/{file.filename}"
+    pdf_path = f"reports/{file.filename}_{timestamp}.pdf"
 
-    # Timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # --- SAVE CSV ---
+    with open(csv_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
-    # PDF Path
-    report_path = f"reports/{file.filename}_{timestamp}.pdf"
-    report_path = str(report_path)
+    analysis = process_file(csv_path)
 
+    #=====================================
+    #     Generate PDF
+    #=====================================
+    try:
+        from app.services.report_generator import generate_pdf_report
 
-    # PDF Generate
-    generate_pdf_report(file.filename, analysis, report_path)
-    print("3 pdf ok")
+        generate_pdf_report(csv_path, analysis, pdf_path)
 
-    print("analysis:", analysis)
-    print("report_path:", report_path)
+        print("PDF CREATED:", pdf_path)
 
-    # Report Save
+    except Exception as e:
+        print("PDF ERROR:", e)
+
+    # =====================================
+    #     DB Save
+    # =====================================
     report = Report(
-        filename=file.filename,
+        file_name=file.filename,
+        csv_path=csv_path,
+        pdf_path=pdf_path,
         rows=analysis["rows"],
         columns=analysis["columns"],
-        column_names=analysis["column_names"],
-        missing_values=analysis["missing_values"],
-        pdf_path=report_path
+        analysis=analysis
     )
 
-    save_report(report)
-    print("4 db ok")
+    db.add(report)
+    db.commit()
+    db.refresh(report)
 
-    # Send Mail
-    # send_gmail(
-    #     receiver="witmar6204@gmail.com",
-    #     subject="Business Report Ready",
-    #     body="Attached is your report.",
-    #     attachment_path=report_path
-    # )
-
-    return {
-        "message": "File processed successfully",
-        "report": {
-            "filename": report.filename,
-            "rows": report.rows,
-            "columns": report.columns,
-            "pdf": report.pdf_path
-        }
-    }
+    return {"id": report.id}

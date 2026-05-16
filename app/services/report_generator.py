@@ -1,19 +1,18 @@
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+import os
 
 
-def generate_pdf_report(file_name, analysis, output_path):
-    doc = SimpleDocTemplate(output_path)
+def generate_pdf_report(csv_path, analysis, pdf_path):
+
+    doc = SimpleDocTemplate(pdf_path)
     styles = getSampleStyleSheet()
 
     content = []
 
     # HEADER
     content.append(Paragraph("BUSINESS REPORT", styles["Title"]))
-    content.append(Paragraph(f"File: {file_name}", styles["Normal"]))
+    content.append(Paragraph(f"File: {os.path.basename(csv_path)}", styles["Normal"]))
     content.append(Spacer(1, 12))
 
     # SUMMARY
@@ -25,14 +24,15 @@ def generate_pdf_report(file_name, analysis, output_path):
     content.append(Spacer(1, 12))
 
     # METRICS
+    print(analysis.get("rows"))
     content.append(Paragraph("BUSINESS METRICS", styles["Heading2"]))
-    content.append(Paragraph(f"Rows: {analysis['rows']}", styles["Normal"]))
-    content.append(Paragraph(f"Columns: {analysis['columns']}", styles["Normal"]))
+    content.append(Paragraph(f"Rows: {analysis.get('rows', 0)}", styles["Normal"]))
+    content.append(Paragraph(f"Columns: {analysis.get('columns', 0)}", styles["Normal"]))
     content.append(Spacer(1, 12))
 
     # DATA QUALITY
     content.append(Paragraph("DATA QUALITY", styles["Heading2"]))
-    content.append(Paragraph(str(analysis["missing_values"]), styles["Normal"]))
+    content.append(Paragraph(str(analysis.get("missing_values", {})), styles["Normal"]))
     content.append(Spacer(1, 12))
 
     # INSIGHTS
