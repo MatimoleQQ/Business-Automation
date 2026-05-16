@@ -8,6 +8,7 @@ export default function Dashboard({ user, onLogout }) {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -19,9 +20,7 @@ export default function Dashboard({ user, onLogout }) {
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/reports/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) throw new Error("Failed to fetch");
@@ -50,21 +49,29 @@ export default function Dashboard({ user, onLogout }) {
   };
 
   // =========================
-  // DOWNLOAD PDF/CSV
+  // DOWNLOAD
   // =========================
-  const downloadPdf = (r) => {
-      const link = document.createElement("a");
-      link.href = `http://127.0.0.1:8000${r.pdf_url}`;
-      link.download = r.file_name || "report.pdf";
-      link.click();
-    };
-
   const downloadCsv = (r) => {
     const a = document.createElement("a");
     a.href = `http://127.0.0.1:8000${r.csv_url}`;
-    a.download = "";
     a.click();
   };
+
+  const downloadPdf = (r) => {
+    const a = document.createElement("a");
+    a.href = `http://127.0.0.1:8000${r.pdf_url}`;
+    a.download = r.file_name || "report.pdf";
+    a.click();
+  };
+
+  // =========================
+  // PREVIEW
+  // =========================
+  const previewPdf = (r) => {
+    setPreviewUrl(`http://127.0.0.1:8000${r.pdf_url}`);
+  };
+
+  const closePreview = () => setPreviewUrl(null);
 
   // =========================
   // TOAST
@@ -132,7 +139,7 @@ export default function Dashboard({ user, onLogout }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full p-2 mb-4 bg-gray-900 border border-gray-800"
+              className="w-full p-2 mb-4 bg-gray-900 border border-gray-800 rounded"
             />
 
             {loading ? (
@@ -144,30 +151,46 @@ export default function Dashboard({ user, onLogout }) {
                 {filtered.map((r) => (
                   <div
                     key={r.id}
-                    className="flex justify-between p-4 bg-gray-900 border border-gray-800"
+                    className="flex items-center justify-between p-5 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition"
                   >
-                    <div>
-                      <div>{r.file_name}</div>
-                      <div className="text-xs text-gray-500">
-                        {r.created_at
-                          ? new Date(r.created_at).toLocaleString()
-                          : ""}
+
+                    {/* LEFT SIDE */}
+                    <div className="flex items-center gap-3">
+
+                      {/* STATUS */}
+                      <span className="text-xs px-2 py-1 rounded bg-green-700">
+                        Ready
+                      </span>
+
+                      {/* NAME + DATE */}
+                      <div className="flex flex-col">
+                        <div className="font-medium">
+                          {r.file_name}
+                        </div>
+
+                        <div className="text-xs text-gray-500">
+                          {r.created_at
+                            ? new Date(r.created_at).toLocaleString()
+                            : ""}
+                        </div>
                       </div>
                     </div>
 
+                    {/* ACTIONS */}
                     <div className="flex gap-2">
+
                       <button
                         onClick={() => downloadCsv(r)}
                         className="px-3 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600"
                       >
-                        Download CSV
+                        CSV
                       </button>
 
                       <button
-                        onClick={() => downloadPdf(r)}
+                        onClick={() => previewPdf(r)}
                         className="px-3 py-1 text-xs rounded bg-blue-600 hover:bg-blue-500"
                       >
-                        Download PDF
+                        Preview
                       </button>
 
                       <button
@@ -176,6 +199,7 @@ export default function Dashboard({ user, onLogout }) {
                       >
                         Delete
                       </button>
+
                     </div>
                   </div>
                 ))}
@@ -190,10 +214,38 @@ export default function Dashboard({ user, onLogout }) {
 
       {/* TOAST */}
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-black p-3">
+        <div className="fixed bottom-6 right-6 bg-black p-3 rounded">
           {toast}
         </div>
       )}
+
+      {/* PREVIEW MODAL */}
+      {previewUrl && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+
+          <div className="bg-gray-900 w-[90%] h-[90%] rounded-lg overflow-hidden border border-gray-700 flex flex-col">
+
+            <div className="flex justify-between items-center p-4 border-b border-gray-700">
+              <h2 className="text-lg font-semibold">PDF Preview</h2>
+
+              <button
+                onClick={closePreview}
+                className="px-3 py-1 bg-red-600 rounded hover:bg-red-500"
+              >
+                Close
+              </button>
+            </div>
+
+            <iframe
+              src={previewUrl}
+              className="w-full flex-1 bg-white"
+              title="PDF Preview"
+            />
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

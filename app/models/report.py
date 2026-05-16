@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, JSON
+from sqlalchemy import Column, Integer, String, JSON, DateTime
 from sqlalchemy.sql import func
 from app.database.db import Base
+from datetime import datetime
 
 class Report(Base):
     __tablename__ = "reports"
@@ -18,3 +19,5 @@ class Report(Base):
 
     pdf_path = Column(String)
     analysis = Column(JSON)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
