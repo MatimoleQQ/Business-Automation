@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Eye, Download, Trash2 } from "lucide-react";
+
 import Upload from "./Upload";
 import Settings from "./Settings";
 
@@ -13,7 +16,7 @@ export default function Dashboard({ user, onLogout }) {
   const token = localStorage.getItem("token");
 
   // =========================
-  // FETCH REPORTS
+  // FETCH
   // =========================
   const fetchReports = async () => {
     setLoading(true);
@@ -23,12 +26,9 @@ export default function Dashboard({ user, onLogout }) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch");
-
       const data = await res.json();
       setReports(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
       setReports([]);
     } finally {
       setLoading(false);
@@ -44,7 +44,7 @@ export default function Dashboard({ user, onLogout }) {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    showToast("Deleted report");
+    showToast("Deleted");
     fetchReports();
   };
 
@@ -57,16 +57,6 @@ export default function Dashboard({ user, onLogout }) {
     a.click();
   };
 
-  const downloadPdf = (r) => {
-    const a = document.createElement("a");
-    a.href = `http://127.0.0.1:8000${r.pdf_url}`;
-    a.download = r.file_name || "report.pdf";
-    a.click();
-  };
-
-  // =========================
-  // PREVIEW
-  // =========================
   const previewPdf = (r) => {
     setPreviewUrl(`http://127.0.0.1:8000${r.pdf_url}`);
   };
@@ -78,12 +68,9 @@ export default function Dashboard({ user, onLogout }) {
   // =========================
   const showToast = (msg) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 2500);
+    setTimeout(() => setToast(null), 2000);
   };
 
-  // =========================
-  // EFFECT
-  // =========================
   useEffect(() => {
     if (view === "reports") fetchReports();
   }, [view]);
@@ -94,7 +81,7 @@ export default function Dashboard({ user, onLogout }) {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">
+      <div className="h-screen flex items-center justify-center bg-gray-950 text-white">
         Not logged in
       </div>
     );
@@ -104,17 +91,17 @@ export default function Dashboard({ user, onLogout }) {
     <div className="min-h-screen flex bg-gray-950 text-white">
 
       {/* SIDEBAR */}
-      <aside className="w-64 border-r border-gray-800 bg-gray-900 p-6 flex flex-col">
-        <h1 className="text-xl font-bold mb-10">🚀 Automation</h1>
+      <aside className="w-64 bg-gray-900 border-r border-gray-800 p-6 flex flex-col">
+        <h1 className="text-xl font-bold mb-8">🚀 Automation</h1>
 
-        <p className="text-sm mb-6">{user?.email}</p>
+        <p className="text-sm mb-6 text-gray-400">{user?.email}</p>
 
         <nav className="space-y-2">
           {["reports", "upload", "settings"].map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`w-full text-left px-3 py-2 rounded ${
+              className={`w-full text-left px-3 py-2 rounded transition ${
                 view === v ? "bg-blue-600" : "hover:bg-gray-800"
               }`}
             >
@@ -123,7 +110,10 @@ export default function Dashboard({ user, onLogout }) {
           ))}
         </nav>
 
-        <button onClick={onLogout} className="mt-auto text-red-400">
+        <button
+          onClick={onLogout}
+          className="mt-auto text-red-400 hover:text-red-300"
+        >
           Logout
         </button>
       </aside>
@@ -142,67 +132,80 @@ export default function Dashboard({ user, onLogout }) {
               className="w-full p-2 mb-4 bg-gray-900 border border-gray-800 rounded"
             />
 
+            {/* LOADING SKELETON */}
             {loading ? (
-              <p>Loading...</p>
-            ) : filtered.length === 0 ? (
-              <p>No reports</p>
-            ) : (
-              <div className="grid gap-3">
-                {filtered.map((r) => (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
                   <div
-                    key={r.id}
-                    className="flex items-center justify-between p-5 bg-gray-900 border border-gray-800 rounded-xl hover:border-gray-600 transition"
-                  >
+                    key={i}
+                    className="h-14 bg-gray-800 rounded-xl animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
 
-                    {/* LEFT SIDE */}
-                    <div className="flex items-center gap-3">
+                <AnimatePresence>
+                  {filtered.map((r) => (
+                    <motion.div
+                      key={r.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      whileHover={{ scale: 1.01 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex items-center justify-between p-4 bg-gray-900 border border-gray-800 rounded-xl"
+                    >
 
-                      {/* STATUS */}
-                      <span className="text-xs px-2 py-1 rounded bg-green-700">
-                        Ready
-                      </span>
+                      {/* LEFT */}
+                      <div className="flex items-center gap-3">
 
-                      {/* NAME + DATE */}
-                      <div className="flex flex-col">
-                        <div className="font-medium">
-                          {r.file_name}
-                        </div>
+                        <span className="text-xs bg-green-700 px-2 py-1 rounded">
+                          Ready
+                        </span>
 
-                        <div className="text-xs text-gray-500">
-                          {r.created_at
-                            ? new Date(r.created_at).toLocaleString()
-                            : ""}
+                        <div>
+                          <div className="font-medium">
+                            {r.file_name}
+                          </div>
+
+                          <div className="text-xs text-gray-500">
+                            {r.created_at
+                              ? new Date(r.created_at).toLocaleString()
+                              : ""}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* ACTIONS */}
-                    <div className="flex gap-2">
+                      {/* ACTIONS */}
+                      <div className="flex items-center gap-2">
 
-                      <button
-                        onClick={() => downloadCsv(r)}
-                        className="px-3 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600"
-                      >
-                        CSV
-                      </button>
+                        <button
+                          onClick={() => downloadCsv(r)}
+                          className="p-2 hover:bg-gray-800 rounded transition active:scale-95"
+                        >
+                          <Download size={16} />
+                        </button>
 
-                      <button
-                        onClick={() => previewPdf(r)}
-                        className="px-3 py-1 text-xs rounded bg-blue-600 hover:bg-blue-500"
-                      >
-                        Preview
-                      </button>
+                        <button
+                          onClick={() => previewPdf(r)}
+                          className="p-2 hover:bg-gray-800 rounded transition active:scale-95"
+                        >
+                          <Eye size={16} />
+                        </button>
 
-                      <button
-                        onClick={() => deleteReport(r.id)}
-                        className="px-3 py-1 text-xs rounded bg-red-600 hover:bg-red-500"
-                      >
-                        Delete
-                      </button>
+                        <button
+                          onClick={() => deleteReport(r.id)}
+                          className="p-2 hover:bg-red-600 rounded transition active:scale-95"
+                        >
+                          <Trash2 size={16} />
+                        </button>
 
-                    </div>
-                  </div>
-                ))}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
               </div>
             )}
           </>
@@ -213,38 +216,50 @@ export default function Dashboard({ user, onLogout }) {
       </main>
 
       {/* TOAST */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 bg-black p-3 rounded">
-          {toast}
-        </div>
-      )}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="fixed bottom-6 right-6 bg-black px-4 py-2 rounded"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* PREVIEW MODAL */}
-      {previewUrl && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      {/* MODAL PDF */}
+      <AnimatePresence>
+        {previewUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          >
+            <div className="bg-gray-900 w-[90%] h-[90%] rounded-lg overflow-hidden flex flex-col">
 
-          <div className="bg-gray-900 w-[90%] h-[90%] rounded-lg overflow-hidden border border-gray-700 flex flex-col">
+              <div className="flex justify-between items-center p-4 border-b border-gray-800">
+                <h2>PDF Preview</h2>
 
-            <div className="flex justify-between items-center p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold">PDF Preview</h2>
+                <button
+                  onClick={closePreview}
+                  className="px-3 py-1 bg-red-600 rounded"
+                >
+                  Close
+                </button>
+              </div>
 
-              <button
-                onClick={closePreview}
-                className="px-3 py-1 bg-red-600 rounded hover:bg-red-500"
-              >
-                Close
-              </button>
+              <iframe
+                src={previewUrl}
+                className="flex-1 bg-white"
+                title="PDF"
+              />
             </div>
-
-            <iframe
-              src={previewUrl}
-              className="w-full flex-1 bg-white"
-              title="PDF Preview"
-            />
-
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
