@@ -4,7 +4,7 @@ import os
 
 
 def generate_pdf_report(csv_path, analysis, pdf_path):
-
+    print("ANALYSIS BEFORE SAVE:", analysis)
     doc = SimpleDocTemplate(pdf_path)
     styles = getSampleStyleSheet()
 

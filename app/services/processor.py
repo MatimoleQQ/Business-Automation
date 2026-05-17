@@ -22,6 +22,7 @@ def process_file(file_path: str):
         "unique_products": int(df["Product"].nunique()) if "Product" in df.columns else None,
         "top_product": df["Product"].value_counts().idxmax() if "Product" in df.columns else None,
     }
+
     analysis["insights"] = generate_insights(df)
     return analysis
 

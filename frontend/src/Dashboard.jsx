@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Download, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import Upload from "./Upload";
 import Settings from "./Settings";
@@ -12,6 +13,7 @@ export default function Dashboard({ user, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
@@ -149,6 +151,7 @@ export default function Dashboard({ user, onLogout }) {
                   {filtered.map((r) => (
                     <motion.div
                       key={r.id}
+                      onClick={() => navigate(`/report/${r.id}`)}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
@@ -160,8 +163,14 @@ export default function Dashboard({ user, onLogout }) {
                       {/* LEFT */}
                       <div className="flex items-center gap-3">
 
-                        <span className="text-xs bg-green-700 px-2 py-1 rounded">
-                          Ready
+                        <span className={
+                          r.status === "done"
+                            ? "bg-green-600"
+                            : r.status === "processing"
+                            ? "bg-yellow-600 animate-pulse"
+                            : "bg-red-600"
+                        }>
+                          {r.status}
                         </span>
 
                         <div>
@@ -195,8 +204,11 @@ export default function Dashboard({ user, onLogout }) {
                         </button>
 
                         <button
-                          onClick={() => deleteReport(r.id)}
-                          className="p-2 hover:bg-red-600 rounded transition active:scale-95"
+                          type="button"
+                          onClick={(e) => {
+                           e.stopPropagation()
+                           deleteReport(r.id)
+                           }}
                         >
                           <Trash2 size={16} />
                         </button>

@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from app.routes import auth, upload, reports, dashboard
 from app.database.db import Base, engine
 from app.models import report, user
+import os
 
 print("MAIN STARTED")
 
@@ -25,6 +26,18 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+REPORTS_DIR = os.path.abspath(os.path.join(BASE_DIR, "reports"))
+
+print("REPORTS_DIR:", REPORTS_DIR)
+
+app.mount(
+    "/files",
+    StaticFiles(directory=REPORTS_DIR),
+    name="files"
 )
 
 app.mount("/reports", StaticFiles(directory="reports"), name="reports")

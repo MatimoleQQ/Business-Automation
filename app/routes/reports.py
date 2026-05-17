@@ -21,6 +21,8 @@ def get_reports(db: Session = Depends(get_db)):
             "pdf_url": f"/reports/{os.path.basename(r.pdf_path)}" if r.pdf_path else None,
             "csv_url": f"/reports/{os.path.basename(r.csv_path)}" if hasattr(r, "csv_path") and r.csv_path else None,
             "created_at": getattr(r, "created_at", None),
+            "status":r.status,
+            "analysis": r.analysis
         }
         for r in reports
     ]
@@ -69,3 +71,25 @@ def delete_report(report_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "deleted"}
+
+# ======================
+# DETAILS
+# ======================
+@router.get("/{report_id}")
+def get_report(report_id: int, db: Session = Depends(get_db)):
+
+    report = db.query(Report).filter(Report.id == report_id).first()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    return {
+        "id": report.id,
+        "file_name": report.file_name,
+        "status": report.status,
+        "rows": report.rows,
+        "columns": report.columns,
+        "analysis": report.analysis,
+        "pdf_url": f"/files/{os.path.basename(report.pdf_path)}" if report.pdf_path else None,
+        "created_at": report.created_at,
+    }
