@@ -17,25 +17,32 @@ export default function Dashboard({ user, onLogout }) {
 
   const token = localStorage.getItem("token");
 
+  const statusStyles = {
+  done: "bg-green-600",
+  processing: "bg-yellow-500 animate-pulse",
+  failed: "bg-red-600",
+  uploaded: "bg-blue-600",
+};
+
   // =========================
   // FETCH
   // =========================
-  const fetchReports = async () => {
-    setLoading(true);
+    const fetchReports = async (silent = false) => {
+      if (!silent) setLoading(true);
 
-    try {
-      const res = await fetch("http://127.0.0.1:8000/api/reports/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/reports/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      const data = await res.json();
-      setReports(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setReports([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const data = await res.json();
+        setReports(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    };
 
   // =========================
   // DELETE
@@ -73,9 +80,17 @@ export default function Dashboard({ user, onLogout }) {
     setTimeout(() => setToast(null), 2000);
   };
 
-  useEffect(() => {
-    if (view === "reports") fetchReports();
-  }, [view]);
+ useEffect(() => {
+  if (view !== "reports") return;
+
+  fetchReports(false); // initial load
+
+  const interval = setInterval(() => {
+    fetchReports(true); // silent refresh
+  }, 3000);
+
+  return () => clearInterval(interval);
+}, [view]);
 
   const filtered = reports.filter((r) =>
     r.file_name?.toLowerCase().includes(search.toLowerCase())
@@ -163,15 +178,37 @@ export default function Dashboard({ user, onLogout }) {
                       {/* LEFT */}
                       <div className="flex items-center gap-3">
 
-                        <span className={
-                          r.status === "done"
-                            ? "bg-green-600"
-                            : r.status === "processing"
-                            ? "bg-yellow-600 animate-pulse"
-                            : "bg-red-600"
-                        }>
-                          {r.status}
-                        </span>
+                        <div className="flex items-center gap-2">
+
+                         {r.status === "processing" && (
+                          <motion.div
+                            className="w-2 h-2 bg-yellow-400 rounded-full"
+                            animate={{ scale: [1, 1.4, 1] }}
+                            transition={{ repeat: Infinity, duration: 1 }}
+                          />
+                        )}
+
+                          {r.status === "done" && (
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          )}
+
+                          {r.status === "failed" && (
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          )}
+
+                          <span
+                            className={`text-xs px-2 py-1 rounded ${
+                              r.status === "done"
+                                ? "bg-green-700"
+                                : r.status === "processing"
+                                ? "bg-yellow-600"
+                                : "bg-red-600"
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+
+                        </div>
 
                         <div>
                           <div className="font-medium">
