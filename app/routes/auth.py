@@ -26,7 +26,14 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    return {"message": "User created"}
+    # 🔥 return full auth response
+    return {
+        "message": "User created",
+        "user": {
+            "id": user.id,
+            "email": user.email
+        }
+    }
 
 
 # ================= LOGIN =================
@@ -43,4 +50,11 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 
     token = create_token(user.id, user.email)
 
-    return {"access_token": token}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email
+        }
+    }

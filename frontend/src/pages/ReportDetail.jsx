@@ -14,6 +14,7 @@ import {
 } from "recharts";
 
 export default function ReportDetail() {
+
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -21,32 +22,46 @@ export default function ReportDetail() {
   const [loading, setLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState(null);
 
+
   const token = localStorage.getItem("token");
+  console.log("REPORT DETAILS MOUNTED");
+    console.log("ID:", id);
 
   // =========================
   // FETCH REPORT
   // =========================
   const fetchReport = async () => {
-    setLoading(true);
+              setLoading(true);
 
-    try {
-      const res = await fetch("http://127.0.0.1:8000/api/reports/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      const data = await res.json();
-      const found = data.find((r) => r.id === Number(id));
+      try {
+        const res = await fetch(
+          `http://127.0.0.1:8000/api/reports/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      setReport(found || null);
-    } catch (err) {
-      console.error(err);
-      setReport(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+        console.log("STATUS:", res.status);
+
+        const data = await res.json();
+
+        console.log("DATA:", data);
+
+        setReport(data);
+        console.log("ID FROM URL:", id);
+console.log("DATA FROM API:", data);
+
+      } catch (err) {
+        console.error(err);
+        setReport(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   useEffect(() => {
     fetchReport();
@@ -135,6 +150,8 @@ export default function ReportDetail() {
   }
 
   return (
+
+
     <div className="min-h-screen bg-gray-950 text-white p-8">
 
       {/* HEADER */}

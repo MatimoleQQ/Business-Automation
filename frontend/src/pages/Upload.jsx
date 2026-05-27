@@ -6,6 +6,7 @@ export default function Upload() {
   const [message, setMessage] = useState("");
 
   const uploadFile = async () => {
+
     if (!selectedFile) {
       setMessage("❌ Wybierz plik");
       return;
@@ -15,6 +16,7 @@ export default function Upload() {
     setMessage("");
 
     const token = localStorage.getItem("token");
+    console.log("TOKEN:", token);
 
     const formData = new FormData();
     formData.append("file", selectedFile);

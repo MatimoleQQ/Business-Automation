@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, JSON, DateTime
+from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from app.database.db import Base
 from sqlalchemy.types import JSON
@@ -21,5 +21,7 @@ class Report(Base):
     pdf_path = Column(String)
     analysis = Column(JSON)
 
+    user_id = Column(Integer, ForeignKey("users.id"))
+
     created_at = Column(DateTime, default=datetime.utcnow)
-    status = Column(String, default="processing")
+    status = Column(String, default="uploaded")

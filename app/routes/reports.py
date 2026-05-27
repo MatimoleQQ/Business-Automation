@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.models.report import Report
+from app.auth.deps import get_current_user
+
 import os
 
 router = APIRouter()
@@ -11,8 +13,13 @@ router = APIRouter()
 # GET ALL REPORTS
 # =====================
 @router.get("/")
-def get_reports(db: Session = Depends(get_db)):
-    reports = db.query(Report).all()
+def get_reports(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    reports = db.query(Report).filter(
+        Report.user_id == current_user.id
+    ).all()
 
     return [
         {
@@ -21,7 +28,7 @@ def get_reports(db: Session = Depends(get_db)):
             "pdf_url": f"/reports/{os.path.basename(r.pdf_path)}" if r.pdf_path else None,
             "csv_url": f"/reports/{os.path.basename(r.csv_path)}" if hasattr(r, "csv_path") and r.csv_path else None,
             "created_at": getattr(r, "created_at", None),
-            "status":r.status,
+            "status": r.status,
             "analysis": r.analysis
         }
         for r in reports
@@ -57,13 +64,20 @@ def download_report(report_id: int, db: Session = Depends(get_db)):
 # DELETE REPORT
 # =====================
 @router.delete("/{report_id}")
-def delete_report(report_id: int, db: Session = Depends(get_db)):
-    report = db.query(Report).filter(Report.id == report_id).first()
+def delete_report(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+
+    report = db.query(Report).filter(
+        Report.id == report_id,
+        Report.user_id == current_user.id
+    ).first()
 
     if not report:
-        raise HTTPException(status_code=404, detail="Report not found")
+        raise HTTPException(status_code=404, detail="Not found")
 
-    # usuń plik PDF
     if report.pdf_path and os.path.exists(report.pdf_path):
         os.remove(report.pdf_path)
 
@@ -76,9 +90,16 @@ def delete_report(report_id: int, db: Session = Depends(get_db)):
 # DETAILS
 # ======================
 @router.get("/{report_id}")
-def get_report(report_id: int, db: Session = Depends(get_db)):
+def get_report(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
 
-    report = db.query(Report).filter(Report.id == report_id).first()
+    report = db.query(Report).filter(
+        Report.id == report_id,
+        Report.user_id == current_user.id
+    ).first()
 
     if not report:
         raise HTTPException(status_code=404, detail="Not found")

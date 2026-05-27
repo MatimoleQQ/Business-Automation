@@ -1,40 +1,42 @@
+import asyncio
+
 from app.database.db import SessionLocal
 from app.models.report import Report
-from app.services.processor import process_file
-from app.services.report_generator import generate_pdf_report
-import os
+from app.services.report_service import update_status
+from app.ws.ws_service import broadcast_reports
 
-def process_report(report_id: int):
+
+async def process_report(report_id: int):
     db = SessionLocal()
 
+    report = db.query(Report).filter(Report.id == report_id).first()
+
     try:
-        report = db.query(Report).filter(Report.id == report_id).first()
+        await update_report_status(db, report, "queued")
+        await asyncio.sleep(1)
 
-        if not report:
-            return
+        await update_report_status(db, report, "processing")
+        await asyncio.sleep(2)
 
-        csv_path = report.csv_path
+        await update_report_status(db, report, "analyzing")
+        await asyncio.sleep(2)
 
-        # 1. analiza CSV
-        analysis = process_file(csv_path)
+        # ANALYZE CSV HERE
 
-        # 2. pdf path
-        pdf_path = csv_path + "_report.pdf"
+        await update_report_status(db, report, "generating_pdf")
+        await asyncio.sleep(2)
 
-        # 3. generate pdf
-        generate_pdf_report(csv_path, analysis, pdf_path)
+        # GENERATE PDF HERE
 
-        # 4. update DB
-        report.analysis = analysis
-        report.pdf_path = pdf_path
-        report.status = "done"
-
-        db.commit()
+        await update_report_status(db, report, "done")
 
     except Exception as e:
-        report.status = "failed"
-        db.commit()
-        print("Worker error:", e)
+        print(e)
+
+        await update_report_status(db, report, "failed")
 
     finally:
         db.close()
+async def update_report_status(db, report, status):
+    update_status(db, report, status)
+    await broadcast_reports()
