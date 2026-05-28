@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/auth/login", {
+      const res = await fetch("http://127.0.0.1:8000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,11 +33,18 @@ export default function Login() {
         return;
       }
 
-      // 🔥 SAFE STORAGE
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      console.log("LOGIN RESPONSE:", data);
+      // SAFE STORAGE
 
+        localStorage.setItem(
+          "access_token",
+          data.access_token ?? ""
+        );
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+
+        console.log("AFTER LOGIN STORAGE:", {
+  access: localStorage.getItem("access_token"),
+});
       navigate("/app/reports");
 
     } catch (err) {
@@ -45,6 +53,7 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
@@ -54,7 +63,7 @@ export default function Login() {
         {/* HEADER */}
         <h1 className="text-2xl font-bold mb-2">Welcome back</h1>
         <p className="text-gray-400 text-sm mb-6">
-          Login to your SaaS dashboard
+          Login to your dashboard
         </p>
 
         {/* FORM */}
@@ -94,8 +103,12 @@ export default function Login() {
 
         {/* FOOTER */}
         <p className="text-xs text-gray-500 mt-6 text-center">
-          Business Automation SaaS
+          Don’t have an account?{" "}
+           <Link to="/register" className="text-blue-400 underline">
+             Create one
+          </Link>
         </p>
+
 
       </div>
     </div>

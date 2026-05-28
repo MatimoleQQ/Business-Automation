@@ -45,16 +45,16 @@ async def upload_file(
         columns=analysis["columns"],
         analysis=analysis,
         status="processing",
-        user_id=current_user.id
+        user_id= current_user["id"]
     )
-    print("AUTH HEADER WORKS")
     db.add(report)
     db.commit()
     db.refresh(report)
 
     asyncio.create_task(process_report(report.id))
-
+    print(analysis)
     await manager.broadcast(get_reports_list())
+
 
     return {
         "id": report.id,

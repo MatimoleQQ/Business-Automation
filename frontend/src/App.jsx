@@ -8,7 +8,7 @@ import Settings from "./pages/Settings";
 import ReportDetail from "./pages/ReportDetail";
 
 function PrivateRoute({ children }) {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
 
   if (!token) {
     return <Navigate to="/login" />;
@@ -33,7 +33,8 @@ export default function App() {
           <DashboardLayout />
         </PrivateRoute>
       }
-    >
+      >
+
 
 
         <Route index element={<Navigate to="reports" />} />
@@ -42,7 +43,7 @@ export default function App() {
       <Route path="upload" element={<Upload />} />
       <Route path="settings" element={<Settings />} />
 
-      </Route>
+    </Route>
 
     </Routes>
   );

@@ -23,7 +23,7 @@ export default function ReportDetail() {
   const [previewUrl, setPreviewUrl] = useState(null);
 
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   console.log("REPORT DETAILS MOUNTED");
     console.log("ID:", id);
 
@@ -43,6 +43,7 @@ export default function ReportDetail() {
             },
           }
         );
+        console.log("token to:=:"+token)
 
 
         console.log("STATUS:", res.status);
@@ -66,7 +67,6 @@ console.log("DATA FROM API:", data);
   useEffect(() => {
     fetchReport();
   }, [id]);
-
   // =========================
   // SAFE ANALYSIS
   // =========================
@@ -118,6 +118,29 @@ console.log("DATA FROM API:", data);
   };
 
   const closePreview = () => setPreviewUrl(null);
+
+  // =========================
+  // Download CSV
+  // =========================
+  const downloadCSV = () => {
+      const token = localStorage.getItem("access_token");
+
+      fetch(`http://127.0.0.1:8000/${report.csv_path}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then(res => res.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = report.file_name || "report.csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        });
+    };
 
   // =========================
   // LOADING / EMPTY
@@ -351,7 +374,12 @@ console.log("DATA FROM API:", data);
           Download PDF
         </button>
 
+        <button onClick={downloadCSV} className="bg-green-600 px-4 py-2 rounded">
+          Download CSV
+        </button>
+
       </div>
+
 
       {/* MODAL */}
       {previewUrl && (

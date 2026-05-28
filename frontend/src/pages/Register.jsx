@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -22,7 +23,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/auth/register", {
+      const res = await fetch("http://127.0.0.1:8000/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +62,7 @@ export default function Register() {
 
         <h1 className="text-2xl font-bold mb-2">Create account</h1>
         <p className="text-gray-400 text-sm mb-6">
-          Start your SaaS automation dashboard
+          Start your automation dashboard
         </p>
 
         <form onSubmit={handleRegister} className="space-y-4">
@@ -107,7 +108,10 @@ export default function Register() {
         </form>
 
         <p className="text-xs text-gray-500 mt-6 text-center">
-          Already have an account? login page
+          Already have an account?{" "}
+           <Link to="/login" className="text-blue-400 underline">
+             Login
+          </Link>
         </p>
 
       </div>

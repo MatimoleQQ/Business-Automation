@@ -1,60 +1,54 @@
 import { useEffect, useState } from "react";
 import { Eye, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../api/apiFetch";
+
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-    const fetchReports = async () => {
-          try {
-            const token = localStorage.getItem("token");
+  const fetchReports = async () => {
+      try {
+        const res = await apiFetch("http://localhost:8000/api/reports/");
+        const data = await res.json();
 
-            const res = await fetch("http://127.0.0.1:8000/api/reports/", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
+        setReports(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+  };
 
-            const data = await res.json();
-            setReports(Array.isArray(data) ? data : []);
-          } catch (err) {
-            console.error(err);
-          } finally {
-            setLoading(false);
-          }
-        };
-        console.log("STATUSES:", reports.map(r => `[${r.status}]`));
   useEffect(() => {
+      fetchReports();
 
-  fetchReports();
+      const interval = setInterval(fetchReports, 3000);
 
-  const interval = setInterval(() => {
-    fetchReports();
-  }, 3000);
-
-  return () => clearInterval(interval);
-}, []);
+      return () => clearInterval(interval);
+  }, []);
 
 
 
   const deleteReport = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const token = localStorage.getItem("access_token");
 
-      await fetch(`http://127.0.0.1:8000/api/reports/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    await fetch(`http://127.0.0.1:8000/api/reports/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      setReports((prev) => prev.filter((r) => r.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    setReports(prev => prev.filter(r => r.id !== id));
+
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   if (loading) {
     return (

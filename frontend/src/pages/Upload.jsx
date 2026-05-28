@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../api/apiFetch";
 
 export default function Upload() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -14,8 +15,8 @@ export default function Upload() {
 
     setLoading(true);
     setMessage("");
-
-    const token = localStorage.getItem("token");
+    console.log(localStorage);
+    const token = localStorage.getItem("access_token");
     console.log("TOKEN:", token);
 
     const formData = new FormData();
@@ -23,13 +24,10 @@ export default function Upload() {
     console.log(selectedFile);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/upload/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
-      });
+      const res = await await apiFetch("http://localhost:8000/api/upload/", {
+          method: "POST",
+          body: formData,
+        });
 
       if (!res.ok) {
         throw new Error("Upload failed");

@@ -41,10 +41,11 @@ app.mount(
     name="files"
 )
 
+app.mount("/files", StaticFiles(directory="reports"), name="files")
 app.mount("/reports", StaticFiles(directory="reports"), name="reports")
 
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(upload.router, prefix="/upload", tags=["Upload"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
 
