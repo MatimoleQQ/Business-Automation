@@ -24,7 +24,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await apiFetch("http://127.0.0.1:8000/api/auth/register", {
+      const res = await apiFetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

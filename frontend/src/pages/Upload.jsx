@@ -22,7 +22,7 @@ export default function Upload() {
     formData.append("file", selectedFile);
 
     try {
-      const res = await await apiFetch("http://localhost:8000/api/upload/", {
+      const res = await await apiFetch("/api/upload/", {
           method: "POST",
           body: formData,
         });

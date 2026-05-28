@@ -5,6 +5,7 @@ import shutil
 import asyncio
 from app.ws.ws_service import broadcast_reports
 from app.services.worker import process_report
+from app.services.processor import get_base_name, generate_pdf_name
 from app.models.report import Report
 from app.database.db import get_db
 from app.services.processor import process_file
@@ -28,8 +29,10 @@ async def upload_file(
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
+
+    pdf_name = generate_pdf_name(file.filename)
     csv_path = f"reports/{file.filename}"
-    pdf_path = f"reports/{file.filename}_{timestamp}.pdf"
+    pdf_path = f"reports/{pdf_name}"
 
     with open(csv_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -38,7 +41,7 @@ async def upload_file(
 
     generate_pdf_report(csv_path, analysis, pdf_path)
     report = Report(
-        file_name=file.filename,
+        file_name=get_base_name(file.filename),
         csv_path=csv_path,
         pdf_path=pdf_path,
         rows=analysis["rows"],

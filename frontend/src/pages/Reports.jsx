@@ -11,7 +11,7 @@ export default function Reports() {
   const navigate = useNavigate();
   const fetchReports = async () => {
       try {
-        const res = await apiFetch("http://localhost:8000/api/reports/");
+        const res = await apiFetch("/api/reports/");
         const data = await res.json();
 
         setReports(Array.isArray(data) ? data : []);
@@ -36,7 +36,7 @@ export default function Reports() {
   try {
     const token = localStorage.getItem("access_token");
 
-    await apiFetch(`http://127.0.0.1:8000/api/reports/${id}`, {
+    await apiFetch(`/api/reports/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ export default function Reports() {
 
                   {/* TITLE */}
                   <p className="text-white font-medium">
-                    {report.title || `Report #${report.id}`}
+                    {report.file_name || `Report #${report.id}`}
                   </p>
 
                 <span

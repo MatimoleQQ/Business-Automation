@@ -1,4 +1,5 @@
 import pandas as pd
+from datetime import datetime
 import os
 
 
@@ -26,6 +27,8 @@ def process_file(file_path: str):
     analysis["insights"] = generate_insights(df)
     return analysis
 
+
+
 def generate_insights(df):
     insights = []
 
@@ -43,3 +46,11 @@ def generate_insights(df):
         insights.append("Dataset contains missing values that may require cleaning")
 
     return insights
+
+def get_base_name(filename: str):
+    return os.path.splitext(filename)[0]
+
+def generate_pdf_name(filename: str):
+    base = get_base_name(filename)
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return f"{base}_{timestamp}.pdf"

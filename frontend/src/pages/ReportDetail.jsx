@@ -58,7 +58,7 @@ export default function ReportDetail() {
         setError("");
 
         const res = await apiFetch(
-          `http://127.0.0.1:8000/api/reports/${id}`
+          `/api/reports/${id}`
         );
 
         if (!res) return;
@@ -151,7 +151,7 @@ export default function ReportDetail() {
   const downloadCSV = () => {
       const token = localStorage.getItem("access_token");
 
-      fetch(`http://127.0.0.1:8000/${report.csv_path}`, {
+      fetch(`/${report.csv_path}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
