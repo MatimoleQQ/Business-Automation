@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+
+import { apiFetch } from "../api/apiFetch";
 import {
   BarChart,
   Bar,
@@ -21,44 +23,56 @@ export default function ReportDetail() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [error, setError] = useState("");
 
 
   const token = localStorage.getItem("access_token");
-  console.log("REPORT DETAILS MOUNTED");
-    console.log("ID:", id);
 
   // =========================
   // FETCH REPORT
   // =========================
   const fetchReport = async () => {
-              setLoading(true);
+      if (error) {
+          return (
+            <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center">
+              <div className="text-red-400 text-xl mb-2">
+                ⚠️ Error
+              </div>
 
+              <div className="text-gray-300 mb-6">
+                {error}
+              </div>
+
+              <button
+                onClick={() => fetchReport()}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
+              >
+                Retry
+              </button>
+            </div>
+          );
+      }
 
       try {
-        const res = await fetch(
-          `http://127.0.0.1:8000/api/reports/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        setLoading(true);
+        setError("");
+
+        const res = await apiFetch(
+          `http://127.0.0.1:8000/api/reports/${id}`
         );
-        console.log("token to:=:"+token)
 
+        if (!res) return;
 
-        console.log("STATUS:", res.status);
+        if (!res.ok) {
+          throw new Error("Failed to load report");
+        }
 
         const data = await res.json();
-
-        console.log("DATA:", data);
-
         setReport(data);
-        console.log("ID FROM URL:", id);
-console.log("DATA FROM API:", data);
 
       } catch (err) {
         console.error(err);
-        setReport(null);
+        setError("Could not load report data");
       } finally {
         setLoading(false);
       }
@@ -67,6 +81,18 @@ console.log("DATA FROM API:", data);
   useEffect(() => {
     fetchReport();
   }, [id]);
+
+
+  // =========================
+  // SKELETON LOADING
+  // =========================
+    function SkeletonBlock() {
+      return (
+        <div className="animate-pulse bg-gray-800 rounded-xl p-4 h-24" />
+      );
+    }
+
+
   // =========================
   // SAFE ANALYSIS
   // =========================
@@ -146,12 +172,24 @@ console.log("DATA FROM API:", data);
   // LOADING / EMPTY
   // =========================
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
+      return (
+        <div className="min-h-screen bg-gray-950 p-8 text-white">
+
+          <div className="h-8 w-1/3 bg-gray-800 rounded mb-6 animate-pulse" />
+
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <SkeletonBlock />
+            <SkeletonBlock />
+            <SkeletonBlock />
+          </div>
+
+          <div className="h-64 bg-gray-800 rounded-xl animate-pulse mb-6" />
+
+          <div className="h-64 bg-gray-800 rounded-xl animate-pulse" />
+
+        </div>
+      );
+    }
 
   if (!report) {
     return (

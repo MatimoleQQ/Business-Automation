@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { apiFetch } from "../api/apiFetch";
 
+
 export default function Upload() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,13 +16,10 @@ export default function Upload() {
 
     setLoading(true);
     setMessage("");
-    console.log(localStorage);
     const token = localStorage.getItem("access_token");
-    console.log("TOKEN:", token);
 
     const formData = new FormData();
     formData.append("file", selectedFile);
-    console.log(selectedFile);
 
     try {
       const res = await await apiFetch("http://localhost:8000/api/upload/", {
@@ -35,7 +33,6 @@ export default function Upload() {
 
       const data = await res.json();
 
-      console.log("UPLOAD OK:", data);
       setMessage("✅ Upload successful!");
     } catch (err) {
       console.error(err);

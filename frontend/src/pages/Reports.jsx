@@ -36,7 +36,7 @@ export default function Reports() {
   try {
     const token = localStorage.getItem("access_token");
 
-    await fetch(`http://127.0.0.1:8000/api/reports/${id}`, {
+    await apiFetch(`http://127.0.0.1:8000/api/reports/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -93,9 +93,6 @@ export default function Reports() {
         .replace("[", "")
         .replace("]", "")
         .toLowerCase();
-
-        console.log("RAW STATUS:", report.status);
-
 
          return (
 

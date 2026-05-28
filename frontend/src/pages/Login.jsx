@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { apiFetch } from "../api/apiFetch";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/auth/login", {
+      const res = await apiFetch("http://127.0.0.1:8000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,6 +33,10 @@ export default function Login() {
         setError(data.detail || "Login failed");
         return;
       }
+      if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+      }
+
 
       // SAFE STORAGE
 
@@ -41,10 +46,6 @@ export default function Login() {
         );
         localStorage.setItem("user", JSON.stringify(data.user));
 
-
-        console.log("AFTER LOGIN STORAGE:", {
-  access: localStorage.getItem("access_token"),
-});
       navigate("/app/reports");
 
     } catch (err) {

@@ -8,18 +8,23 @@ export async function apiFetch(url, options = {}) {
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(options.headers || {}),
-      Authorization: token ? `Bearer ${token}` : "",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
+  // 💥 GLOBAL AUTH HANDLING
   if (res.status === 401) {
-    console.warn("Unauthorized - clearing session");
+    console.warn("401 Unauthorized → logging out user");
 
     localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+
+    // optional cleanup
     localStorage.removeItem("user");
 
     window.location.href = "/login";
-    return;
+
+    return; // stop execution
   }
 
   return res;

@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { apiFetch } from "../api/apiFetch";
 
 export default function Settings() {
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [autoPdf, setAutoPdf] = useState(true);
   const [autoSaveDb, setAutoSaveDb] = useState(true);
+
 
   return (
     <div className="max-w-xl">
