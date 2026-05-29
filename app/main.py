@@ -24,6 +24,8 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "https://business-automation-mqf0x4i2q-themartino.vercel.app",
+        "https://business-automation-git-main-themartino.vercel.app",
+        "https://business-automation-pink-two.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
