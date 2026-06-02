@@ -22,10 +22,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://localhost:5173",
         "http://127.0.0.1:5173",
         "https://business-automation-mqf0x4i2q-themartino.vercel.app",
         "https://business-automation-git-main-themartino.vercel.app",
-        "https://business-automation-pink-two.vercel.app",
+        "https://business-automation-pink-two.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -33,10 +34,8 @@ app.add_middleware(
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-REPORTS_DIR = os.path.abspath(os.path.join(BASE_DIR,"..", "reports"))
-
-print("REPORTS_DIR:", REPORTS_DIR)
+REPORTS_DIR = os.path.join(BASE_DIR, "reports")
+os.makedirs(REPORTS_DIR, exist_ok=True)
 
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
