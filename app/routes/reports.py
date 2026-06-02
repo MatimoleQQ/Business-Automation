@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.models.report import Report
 from app.auth.deps import get_current_user
+from fastapi.responses import FileResponse
 
 import os
 
@@ -36,10 +37,14 @@ def get_reports(
 
 
 # =====================
-# DOWNLOAD PDF (optional endpoint)
+# DOWNLOAD PDF
 # =====================
 @router.get("/{report_id}/download")
-def download_report(report_id: int, db: Session = Depends(get_db)):
+def download_report(
+        report_id: int,
+        db: Session = Depends(get_db),
+        user=Depends(get_current_user)
+):
     report = db.query(Report).filter(Report.id == report_id).first()
 
     if not report:
@@ -57,7 +62,34 @@ def download_report(report_id: int, db: Session = Depends(get_db)):
         filename=os.path.basename(report.pdf_path)
     )
 
+# =====================
+# DOWNLOAD CSV
+# =====================
+@router.get("/{report_id}/download-csv")
+def download_csv(
+        report_id: int,
+        db: Session = Depends(get_db),
+        user=Depends(get_current_user)
+):
+    report = db.query(Report).filter(Report.id == report_id).first()
 
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    if not report.csv_path:
+        raise HTTPException(status_code=404, detail="No CSV")
+
+    if not os.path.exists(report.csv_path):
+        raise HTTPException(
+            status_code=404,
+            detail="CSV file not found on disk"
+        )
+
+    return FileResponse(
+        path=report.csv_path,
+        media_type="text/csv",
+        filename=os.path.basename(report.csv_path)
+    )
 
 
 # =====================

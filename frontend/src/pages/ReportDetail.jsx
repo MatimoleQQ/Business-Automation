@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
+import { getFileName } from "../api/fileUtils";
 import { apiFetch } from "../api/apiFetch";
+
 import {
   BarChart,
   Bar,
@@ -15,8 +16,9 @@ import {
   Cell
 } from "recharts";
 
-export default function ReportDetail() {
+const API = import.meta.env.VITE_API_URL;
 
+export default function ReportDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -25,73 +27,33 @@ export default function ReportDetail() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState("");
 
-
-  const token = localStorage.getItem("access_token");
-
   // =========================
   // FETCH REPORT
   // =========================
   const fetchReport = async () => {
-      if (error) {
-          return (
-            <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center">
-              <div className="text-red-400 text-xl mb-2">
-                ⚠️ Error
-              </div>
+    try {
+      setLoading(true);
+      setError("");
 
-              <div className="text-gray-300 mb-6">
-                {error}
-              </div>
+      const res = await apiFetch(`/api/reports/${id}`);
 
-              <button
-                onClick={() => fetchReport()}
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
-              >
-                Retry
-              </button>
-            </div>
-          );
+      if (!res || !res.ok) {
+        throw new Error("Failed to load report");
       }
 
-      try {
-        setLoading(true);
-        setError("");
-
-        const res = await apiFetch(
-          `/api/reports/${id}`
-        );
-
-        if (!res) return;
-
-        if (!res.ok) {
-          throw new Error("Failed to load report");
-        }
-
-        const data = await res.json();
-        setReport(data);
-
-      } catch (err) {
-        console.error(err);
-        setError("Could not load report data");
-      } finally {
-        setLoading(false);
-      }
-    };
+      const data = await res.json();
+      setReport(data);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load report data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchReport();
   }, [id]);
-
-
-  // =========================
-  // SKELETON LOADING
-  // =========================
-    function SkeletonBlock() {
-      return (
-        <div className="animate-pulse bg-gray-800 rounded-xl p-4 h-24" />
-      );
-    }
-
 
   // =========================
   // SAFE ANALYSIS
@@ -123,100 +85,167 @@ export default function ReportDetail() {
   const COLORS = ["#3b82f6", "#22c55e"];
 
   // =========================
-  // DOWNLOAD
+  // DOWNLOAD FILE (GENERIC)
   // =========================
   const downloadFile = (url, filename) => {
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", filename);
-    link.setAttribute("target", "_blank");
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     link.remove();
   };
 
+
+  // =========================
+  // DOWNLOAD PDF
+  // =========================
+  const downloadPDF = async () => {
+  const token = localStorage.getItem("access_token");
+
+  const res = await fetch(
+    `${API}/api/reports/${report.id}/download`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    console.error("Download failed");
+    return;
+  }
+
+  const blob = await res.blob();
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${report.file_name}.pdf`;
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  URL.revokeObjectURL(url);
+};
+
   // =========================
   // PDF PREVIEW
   // =========================
-  const openPreview = () => {
-    if (!report?.pdf_url) return;
-    setPreviewUrl(`http://127.0.0.1:8000${report.pdf_url}`);
-  };
+  const openPreview = async () => {
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(
+        `${API}/api/reports/${report.id}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        console.error("PDF preview failed");
+        return;
+      }
+
+      const blob = await res.blob();
+
+      const url = URL.createObjectURL(blob);
+
+      setPreviewUrl(url);
+    };
 
   const closePreview = () => setPreviewUrl(null);
 
   // =========================
-  // Download CSV
+  // CSV DOWNLOAD
   // =========================
-  const downloadCSV = () => {
+  const downloadCSV = async () => {
       const token = localStorage.getItem("access_token");
 
-      fetch(`/${report.csv_path}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then(res => res.blob())
-        .then(blob => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = report.file_name || "report.csv";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        });
+      const res = await fetch(
+        `${API}/api/reports/${report.id}/download-csv`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        console.error("CSV download failed");
+        return;
+      }
+
+      const blob = await res.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${report.file_name}.csv`;
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
     };
 
   // =========================
-  // LOADING / EMPTY
+  // LOADING
   // =========================
   if (loading) {
-      return (
-        <div className="min-h-screen bg-gray-950 p-8 text-white">
-
-          <div className="h-8 w-1/3 bg-gray-800 rounded mb-6 animate-pulse" />
-
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <SkeletonBlock />
-            <SkeletonBlock />
-            <SkeletonBlock />
-          </div>
-
-          <div className="h-64 bg-gray-800 rounded-xl animate-pulse mb-6" />
-
-          <div className="h-64 bg-gray-800 rounded-xl animate-pulse" />
-
+    return (
+      <div className="min-h-screen bg-gray-950 p-8 text-white animate-pulse">
+        <div className="h-8 w-1/3 bg-gray-800 rounded mb-6" />
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="h-24 bg-gray-800 rounded" />
+          <div className="h-24 bg-gray-800 rounded" />
+          <div className="h-24 bg-gray-800 rounded" />
         </div>
-      );
-    }
+        <div className="h-64 bg-gray-800 rounded mb-6" />
+        <div className="h-64 bg-gray-800 rounded" />
+      </div>
+    );
+  }
+
+  // =========================
+  // ERROR / EMPTY
+  // =========================
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center">
+        <div className="text-red-400 text-xl mb-2">⚠️ Error</div>
+        <div className="text-gray-300 mb-4">{error}</div>
+
+        <button
+          onClick={fetchReport}
+          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center text-center p-10">
-          <div className="text-5xl mb-4">📊</div>
-          <h2 className="text-xl font-semibold">Report not found</h2>
-          <p className="text-gray-400 mt-2">
-            This report may have been deleted or never existed.
-          </p>
-
-          <button
-            onClick={() => navigate(-1)}
-            className="mt-6 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
-          >
-            Go back
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        Report not found
+      </div>
     );
   }
 
   return (
-
-
     <div className="min-h-screen bg-gray-950 text-white p-8">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between mb-8">
         <button
           onClick={() => navigate(-1)}
           className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
@@ -224,170 +253,60 @@ export default function ReportDetail() {
           ← Back
         </button>
 
-        <div className="text-sm text-gray-400">
+        <div className="text-gray-400 text-sm">
           Report #{report.id}
         </div>
       </div>
 
       {/* TITLE */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">{report.file_name}</h1>
-        <p className="text-gray-400 text-sm mt-1">
-          Auto-generated analytics dashboard • AI processed dataset
-        </p>
-      </div>
-
-      <div className="mb-8 grid grid-cols-3 gap-4">
-
-  <div className="p-4 bg-gray-900 border border-gray-800 rounded-xl">
-    <p className="text-gray-400 text-xs">File name</p>
-    <p className="text-sm mt-1">{report.file_name}</p>
-  </div>
-
-  <div className="p-4 bg-gray-900 border border-gray-800 rounded-xl">
-    <p className="text-gray-400 text-xs">Status</p>
-    <p className="text-sm mt-1 capitalize">{report.status}</p>
-  </div>
-
-  <div className="p-4 bg-gray-900 border border-gray-800 rounded-xl">
-    <p className="text-gray-400 text-xs">Report ID</p>
-    <p className="text-sm mt-1">#{report.id}</p>
-  </div>
-
-</div>
-
-      {/* STATUS */}
-      <div className="mb-8">
-        <span className="px-3 py-1 text-xs rounded-full bg-green-500/10 text-green-400 border border-green-500/30">
-          Ready
-        </span>
-      </div>
+      <h1 className="text-3xl font-bold mb-6">
+        {report.file_name}
+      </h1>
 
       {/* METRICS */}
       <div className="grid grid-cols-3 gap-4 mb-10">
-
-        <div className="p-6 rounded-2xl bg-gray-900 border border-gray-800">
-          <div className="text-gray-400 text-sm">Rows</div>
-          <div className="text-4xl font-bold mt-2">
-            {analysis.rows ?? 0}
-          </div>
+        <div className="p-6 bg-gray-900 rounded-xl">
+          Rows: {analysis.rows ?? 0}
         </div>
-
-        <div className="p-6 rounded-2xl bg-gray-900 border border-gray-800">
-          <div className="text-gray-400 text-sm">Columns</div>
-          <div className="text-4xl font-bold mt-2">
-            {analysis.columns ?? 0}
-          </div>
+        <div className="p-6 bg-gray-900 rounded-xl">
+          Columns: {analysis.columns ?? 0}
         </div>
-
-        <div className="p-6 rounded-2xl bg-gray-900 border border-gray-800">
-          <div className="text-gray-400 text-sm">Data Quality</div>
-          <div className="text-4xl font-bold mt-2">
-            {qualityScore}%
-          </div>
+        <div className="p-6 bg-gray-900 rounded-xl">
+          Quality: {qualityScore}%
         </div>
-
       </div>
 
       {/* CHARTS */}
       <div className="grid grid-cols-2 gap-6 mb-10">
 
-        {/* BAR */}
-        <div className="p-6 bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-2xl">
-          <h2 className="text-lg font-semibold mb-4">
-            Dataset Overview
-          </h2>
+        <div className="p-6 bg-gray-900 rounded-xl">
+          <h2 className="mb-4">Dataset Overview</h2>
 
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData}>
               <XAxis dataKey="name" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
-              <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#111827",
-                    border: "1px solid #374151",
-                    borderRadius: "8px",
-                    color: "#fff"
-                  }}
-                  itemStyle={{
-                    color: "#fff"
-                  }}
-                  labelStyle={{
-                    color: "#fff"
-                  }}
-                />
-              <Bar
-                dataKey="value"
-                fill="#3b82f6"
-                radius={[8, 8, 0, 0]}
-              />
+              <Tooltip />
+              <Bar dataKey="value" fill="#3b82f6" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* PIE */}
-        <div className="p-6 bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-2xl">
-          <h2 className="text-lg font-semibold mb-4">
-            Data Quality Score
-          </h2>
+        <div className="p-6 bg-gray-900 rounded-xl">
+          <h2 className="mb-4">Quality</h2>
 
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                outerRadius={90}
-                innerRadius={60}
-                paddingAngle={4}
-              >
-                {pieData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index]} />
+              <Pie data={pieData} dataKey="value" outerRadius={80}>
+                {pieData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i]} />
                 ))}
               </Pie>
-
-              <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#111827",
-                    border: "1px solid #374151",
-                    borderRadius: "8px",
-                    color: "#fff"
-                  }}
-                  itemStyle={{
-                    color: "#fff"
-                  }}
-                  labelStyle={{
-                    color: "#fff"
-                  }}
-                />
+              <Tooltip />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
-      </div>
-
-      {/* INSIGHTS */}
-      <div className="mb-10">
-        <h2 className="text-xl font-semibold mb-3">Insights</h2>
-
-        <div className="space-y-2">
-          {(analysis.insights?.length > 0) ? (
-              analysis.insights.map((i, idx) => (
-                <motion.div
-                    key={idx}
-                    className="p-3 bg-gray-900 border border-gray-800 rounded-lg text-sm"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                  >
-                    • {i}
-                  </motion.div>
-              ))
-            ) : (
-              <div className="p-4 bg-gray-900 border border-gray-800 rounded-lg text-gray-400 text-sm">
-                No insights available for this dataset
-              </div>
-            )}
-        </div>
       </div>
 
       {/* ACTIONS */}
@@ -395,57 +314,59 @@ export default function ReportDetail() {
 
         <button
           onClick={openPreview}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg"
+          className="px-4 py-2 bg-blue-600 rounded"
         >
           Preview PDF
         </button>
 
         <button
           onClick={() =>
-            downloadFile(
-              `http://127.0.0.1:8000${report.pdf_url}`,
+            downloadPDF(
+              `${API}/api/reports/${report.id}/download`,
               report.file_name + ".pdf"
             )
+
           }
-          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
+          className="px-4 py-2 bg-gray-800 rounded"
         >
           Download PDF
         </button>
 
-        <button onClick={downloadCSV} className="bg-green-600 px-4 py-2 rounded">
+        <button
+          onClick={downloadCSV}
+          className="px-4 py-2 bg-green-600 rounded"
+        >
           Download CSV
         </button>
 
       </div>
 
-
-      {/* MODAL */}
+      {/* PREVIEW MODAL */}
       {previewUrl && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-gray-900 w-[90%] h-[90%] rounded-xl flex flex-col">
 
-          <div className="bg-gray-900 w-[90%] h-[90%] rounded-xl border border-gray-700 flex flex-col">
+              <div className="flex justify-between p-4 border-b border-gray-700">
+                <h2>PDF Preview</h2>
 
-            <div className="flex justify-between items-center p-4 border-b border-gray-700">
-              <h2 className="font-semibold">PDF Preview</h2>
+                <button
+                  onClick={() => {
+                    URL.revokeObjectURL(previewUrl);
+                    setPreviewUrl(null);
+                  }}
+                  className="px-3 py-1 bg-red-600 rounded"
+                >
+                  Close
+                </button>
+              </div>
 
-              <button
-                onClick={closePreview}
-                className="px-3 py-1 bg-red-600 hover:bg-red-500 rounded"
-              >
-                Close
-              </button>
+              <iframe
+                src={previewUrl}
+                className="flex-1 w-full bg-white"
+              />
             </div>
-
-            <iframe
-              src={previewUrl}
-              className="flex-1 w-full bg-white"
-              title="PDF Preview"
-            />
-
           </div>
-
-        </div>
-      )}
+        )}
 
     </div>
   );

@@ -40,6 +40,7 @@ async def upload_file(
     analysis = process_file(csv_path)
 
     generate_pdf_report(csv_path, analysis, pdf_path)
+    print("pdf path: "+ pdf_path+ " csv path: "+ csv_path)
     report = Report(
         file_name=get_base_name(file.filename),
         csv_path=csv_path,
