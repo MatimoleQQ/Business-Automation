@@ -34,9 +34,11 @@ app.add_middleware(
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-REPORTS_DIR = os.path.abspath(os.path.join(BASE_DIR, "reports"))
+REPORTS_DIR = os.path.abspath(os.path.join(BASE_DIR,"..", "reports"))
 
 print("REPORTS_DIR:", REPORTS_DIR)
+
+os.makedirs(REPORTS_DIR, exist_ok=True)
 
 app.mount(
     "/files",
