@@ -117,13 +117,6 @@ Deployment: - Vercel (frontend) - Render (backend)
 
 ------------------------------------------------------------------------
 
-## 🗂 Project Structure
-
-business-automation/ ├── frontend/ │ ├── src/ │ └── public/screenshots/
-├── backend/ │ └── app/ └── reports/
-
-------------------------------------------------------------------------
-
 ## 🚀 What This Project Demonstrates
 
 -   Full-stack development
