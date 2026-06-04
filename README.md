@@ -1,257 +1,152 @@
 # 🚀 Business Automation Platform
 
-A production-style full-stack SaaS application for automated CSV processing, analytics, and PDF report generation.
+A full-stack web application that automates CSV data processing, report
+generation, and business analytics workflows.
 
-The system allows users to upload datasets, automatically process and analyze data quality, generate structured reports, and download results as PDF or CSV through a secure dashboard.
+Built with FastAPI and React, the platform allows users to upload
+datasets, automatically analyze data quality and structure, generate PDF
+reports, and manage reports through a secure dashboard.
 
-Built to simulate a real-world data automation pipeline used in business analytics platforms.
-
----
+------------------------------------------------------------------------
 
 ## 🔗 Live Demo
 
-Frontend:
-https://business-automation-pink-two.vercel.app/
+Frontend: https://business-automation-pink-two.vercel.app/\
 
-Backend API:
+Backend API: https://business-automation-px4u.onrender.com/
+
+------------------------------------------------------------------------
+
+## ⚠️ Live Demo Instructions
+
+### 1. Start Backend First
+
+Open backend link:
+
 https://business-automation-px4u.onrender.com/
 
----
+Wait 20--60 seconds for Render to wake up.
 
-## 🔑 Test Account
+You should see a response like: "Backend is running"
 
-For quick access:
+------------------------------------------------------------------------
 
-```
+### 2. Open Frontend
+
+https://business-automation-pink-two.vercel.app/
+
+------------------------------------------------------------------------
+
+### 3. Login
+
 Email: test@test.com
+
 Password: 1234
-```
 
----
+------------------------------------------------------------------------
 
-## ✨ Key Features
+### 4. Use Application
 
-### 🔐 Authentication System
+-   Upload CSV file
+-   View dashboard analytics
+-   Generate reports
+-   Download PDF / CSV
+-   Preview reports
 
-* JWT-based authentication
-* Secure login / register flow
-* Protected routes (frontend + backend)
-* Password hashing (bcrypt)
-
----
-
-### 📊 Data Processing Pipeline
-
-* CSV file upload
-* Automated dataset analysis
-* Missing values detection
-* Dataset statistics generation
-* Background processing (FastAPI BackgroundTasks)
-
----
-
-### 📄 Report Generation System
-
-* Automatic PDF report generation
-* CSV export support
-* Timestamped reports
-* Structured analytics output
-
----
-
-### 📥 File Management
-
-* Secure PDF download (JWT protected)
-* Secure CSV download
-* PDF preview in browser
-* File ownership per user
-
----
-
-### 📊 Analytics Dashboard
-
-* Interactive charts (Recharts)
-* Dataset overview metrics
-* Data quality scoring
-* Report history management
-* Report status tracking
-
----
-
-### 🎨 UI / UX
-
-* Modern dark dashboard UI
-* Loading skeletons
-* Error & empty states
-* Responsive layout
-* Smooth animations (Framer Motion)
-
----
-
-## ⚙️ Architecture Overview
-
-### Backend (FastAPI)
-
-Responsible for:
-
-* Authentication (JWT)
-* File processing pipeline
-* Report generation (PDF/CSV)
-* Database operations
-* Background task execution
-
----
-
-### Frontend (React)
-
-Responsible for:
-
-* UI rendering
-* Routing
-* Authentication state handling
-* Dashboard visualization
-* File downloads & preview
-
----
-
-### Data Flow
-
-```
-CSV Upload
-   ↓
-Backend validation
-   ↓
-Data analysis (stats + insights)
-   ↓
-Background report generation
-   ↓
-PDF + CSV stored on server
-   ↓
-User downloads / previews results
-```
-
----
-
-## 🧠 Tech Stack
-
-### Frontend
-
-* React
-* Vite
-* React Router
-* Tailwind CSS
-* Framer Motion
-* Recharts
-
-### Backend
-
-* FastAPI
-* SQLAlchemy
-* JWT Authentication
-* FastAPI BackgroundTasks
-* ReportLab (PDF generation)
-
-### Database
-
-* PostgreSQL
-
-### Deployment
-
-* Vercel (Frontend)
-* Render (Backend)
-
----
-
-## 🗂️ Project Structure
-
-```
-business-automation/
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── hooks/
-│   │   └── routes/
-│
-├── backend/
-│   ├── app/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── auth/
-│   │   ├── models/
-│   │   └── database/
-│
-└── reports/
-```
-
----
-
-## 📡 API Endpoints
-
-### Auth
-
-```
-POST /api/auth/register
-POST /api/auth/login
-```
-
-### Reports
-
-```
-GET  /api/reports
-GET  /api/reports/{id}
-GET  /api/reports/{id}/download
-GET  /api/reports/{id}/download-csv
-```
-
-### Upload
-
-```
-POST /api/upload
-```
-
----
+------------------------------------------------------------------------
 
 ## 📸 Screenshots
 
-> Add screenshots here (VERY recommended)
+### Dashboard
 
-* Dashboard view
-* Report details page
-* Upload flow
+![Dashboard](screenshots/dashboard.jpg)
 
----
+### Report Details
+
+![Report Details](screenshots/report-detail.jpg)
+
+### Upload Page
+
+![Upload](screenshots/upload.jpg)
+
+### Login
+
+![Login](screenshots/login.jpg)
+------------------------------------------------------------------------
+
+## ✨ Features
+
+### Authentication
+
+-   JWT authentication
+-   Protected routes
+-   Secure login system
+
+### Data Processing
+
+-   CSV upload
+-   Data analysis
+-   Missing values detection
+-   Statistics generation
+
+### Reports
+
+-   PDF generation
+-   CSV export
+-   Report preview
+-   Download system
+
+### Dashboard
+
+-   Charts (Recharts)
+-   Report management
+-   Status tracking
+-   Analytics view
+
+------------------------------------------------------------------------
+
+## 🧠 Tech Stack
+
+Frontend: - React - Vite - Tailwind CSS - Recharts - Framer Motion
+
+Backend: - FastAPI - SQLAlchemy - JWT - BackgroundTasks - ReportLab
+
+Database: - PostgreSQL
+
+Deployment: - Vercel (frontend) - Render (backend)
+
+------------------------------------------------------------------------
+
+## 🗂 Project Structure
+
+business-automation/ ├── frontend/ │ ├── src/ │ └── public/screenshots/
+├── backend/ │ └── app/ └── reports/
+
+------------------------------------------------------------------------
 
 ## 🚀 What This Project Demonstrates
 
-This project was built to showcase:
+-   Full-stack development
+-   Authentication system
+-   File processing pipelines
+-   Background tasks
+-   REST API design
+-   Data visualization
+-   Production deployment
 
-* Full-stack application design
-* Authentication & authorization systems
-* File processing pipelines
-* Background task execution
-* REST API design
-* Frontend state management
-* Data visualization
-* Production deployment workflow
-
----
+------------------------------------------------------------------------
 
 ## 🔮 Future Improvements
 
-* User roles (admin / user)
-* Cloud storage (S3 / Cloudinary)
-* Email notifications
-* Report sharing system
-* Advanced analytics module
-* Queue-based processing (Celery / Redis)
+-   User roles (admin/user)
+-   Cloud storage integration
+-   Email notifications
+-   Queue-based processing
+-   Advanced analytics
 
----
+------------------------------------------------------------------------
 
 ## 👤 Author
 
-**Marcin Witański**
-
+Marcin Witański\
 GitHub: https://github.com/MatimoleQQ
