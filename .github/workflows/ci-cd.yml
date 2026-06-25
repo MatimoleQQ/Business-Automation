@@ -23,7 +23,8 @@ jobs:
 
       - name: Backend import test
         run: |
-          python -c "from app.main import app; print('Backend OK')"
+          cd app
+          python -c "from main import app; print('Backend OK')"
 
 
   frontend-build:
