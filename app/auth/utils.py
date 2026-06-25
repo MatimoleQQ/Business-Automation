@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta
-from app.auth.config import SECRET_KEY, ALGORITHM
+from auth.config import SECRET_KEY, ALGORITHM
 
 
 

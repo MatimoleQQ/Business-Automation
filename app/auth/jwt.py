@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import jwt
-from app.auth.config import SECRET_KEY, ALGORITHM
+from auth.config import SECRET_KEY, ALGORITHM
 
 def create_access_token(data: dict):
     to_encode = data.copy()

@@ -1,9 +1,9 @@
 import asyncio
 
-from app.database.db import SessionLocal
-from app.models.report import Report
-from app.services.report_service import update_status
-from app.ws.ws_service import broadcast_reports
+from database.db import SessionLocal
+from models.report import Report
+from services.report_service import update_status
+from ws.ws_service import broadcast_reports
 
 
 async def process_report(report_id: int):

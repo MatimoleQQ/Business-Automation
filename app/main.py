@@ -2,11 +2,12 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.ws.ws_manager import manager
-from app.services.report_service import get_reports_list
-from app.routes import auth, upload, reports, dashboard
-from app.database.db import Base, engine
-from app.models import report, user
+from ws.ws_manager import manager
+from services.report_service import get_reports_list
+from routes import auth, upload, reports, dashboard
+from database.db import Base, engine
+from models import report, user
+from pathlib import Path
 import os
 import asyncio
 
@@ -33,11 +34,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPORTS_DIR = os.path.join(BASE_DIR, "reports")
-os.makedirs(REPORTS_DIR, exist_ok=True)
 
-os.makedirs(REPORTS_DIR, exist_ok=True)
+BASE_DIR = Path(__file__).resolve().parent
+REPORTS_DIR = BASE_DIR / "reports"
+
+REPORTS_DIR.mkdir(exist_ok=True)
 
 app.mount(
     "/files",

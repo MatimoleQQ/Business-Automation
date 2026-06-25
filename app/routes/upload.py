@@ -3,16 +3,16 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 import shutil
 import asyncio
-from app.ws.ws_service import broadcast_reports
-from app.services.worker import process_report
-from app.services.processor import get_base_name, generate_pdf_name
-from app.models.report import Report
-from app.database.db import get_db
-from app.services.processor import process_file
-from app.services.report_generator import generate_pdf_report
-from app.services.report_service import get_reports_list
-from app.ws.ws_manager import manager
-from app.auth.deps import get_current_user
+from ws.ws_service import broadcast_reports
+from services.worker import process_report
+from services.processor import get_base_name, generate_pdf_name
+from models.report import Report
+from database.db import get_db
+from services.processor import process_file
+from services.report_generator import generate_pdf_report
+from services.report_service import get_reports_list
+from ws.ws_manager import manager
+from auth.deps import get_current_user
 import os
 
 router = APIRouter()

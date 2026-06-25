@@ -1,6 +1,6 @@
-from app.models.report import Report
-from app.database.db import SessionLocal
-from app.ws.ws_manager import manager
+from models.report import Report
+from database.db import SessionLocal
+from ws.ws_manager import manager
 from datetime import datetime
 import os
 
