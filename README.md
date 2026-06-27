@@ -103,9 +103,82 @@ Password: 1234
 -   Status tracking
 -   Analytics view
 
+## 🚀 CI/CD Pipeline & Docker Setup
+
+### 🐳 Dockerized Backend (FastAPI)
+
+This project uses Docker to containerize the backend built with FastAPI.
+
+The backend is located in the `app/` directory and includes all required dependencies in `requirements.txt`.
+
+### ⚙️ Docker Architecture
+
+The backend container:
+
+- installs dependencies from `requirements.txt`
+- copies application code from `/app`
+- runs FastAPI with Uvicorn
+
+Example Dockerfile command:
+
+```dockerfile
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+```
+
+---
+
+## ⚡ GitHub Actions CI/CD Pipeline
+
+The project uses **GitHub Actions** for Continuous Integration (CI).
+
+The pipeline automatically runs on every push to the `main` branch.
+
+---
+
+### 🔄 CI Workflow Overview
+
+The CI pipeline performs:
+
+- backend import validation
+- automated test execution (pytest)
+- frontend build verification (Vite)
+
+---
+
+### 🧪 Backend Tests
+
+Example backend validation step:
+
+```yaml
+- name: Backend import test
+  run: |
+    PYTHONPATH=. python -c "from app.main import app; print('Backend OK')"
+```
+
+Or full test run:
+
+```bash
+pytest test/ai -v
+```
+
+---
+## 🚀 Deployment Flow
+
+```
+GitHub Push
+    ↓
+GitHub Actions (CI)
+    ├── Backend tests
+    ├── Frontend build
+    ↓
+Render (Backend deploy)
+    ↓
+Vercel (Frontend deploy)
+```
+
 ------------------------------------------------------------------------
 
-## 🧠 Tech Stack
+##  Tech Stack
 
 Frontend: - React - Vite - Tailwind CSS - Recharts - Framer Motion
 
@@ -113,10 +186,17 @@ Backend: - FastAPI - SQLAlchemy - JWT - BackgroundTasks - ReportLab
 
 Database: - PostgreSQL
 
-Deployment: - Vercel (frontend) - Render (backend)
+Deployment: - Vercel (frontend) - Render (backend) - Docker (contenerization)
 
 ------------------------------------------------------------------------
 
+## 🧠 Key Highlights
+
+- Dockerized FastAPI backend
+- Automated CI pipeline with GitHub Actions
+- Separation of backend, frontend, and test layers
+- Production-ready deployment on Render & Vercel
+- Scalable architecture with test automation
 ## 🚀 What This Project Demonstrates
 
 -   Full-stack development
@@ -126,6 +206,7 @@ Deployment: - Vercel (frontend) - Render (backend)
 -   REST API design
 -   Data visualization
 -   Production deployment
+-  Project Contenerization
 
 ------------------------------------------------------------------------
 
