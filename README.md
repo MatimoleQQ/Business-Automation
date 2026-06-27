@@ -13,7 +13,7 @@ reports, and manage reports through a secure dashboard.
 
 Frontend: https://business-automation-pink-two.vercel.app/\
 
-Backend API:[ https://business-automation-px4u.onrender.com/](https://business-automation-iyqi.onrender.com/)
+Backend API:[ https://business-automation-iyqi.onrender.com/ ](https://business-automation-iyqi.onrender.com/)
 
 ------------------------------------------------------------------------
 
@@ -21,9 +21,7 @@ Backend API:[ https://business-automation-px4u.onrender.com/](https://business-a
 
 ### 1. Start Backend First
 
-Open backend link:
-
-https://business-automation-px4u.onrender.com/
+Open backend link
 
 Wait 20--60 seconds for Render to wake up.
 
@@ -31,10 +29,8 @@ You should see a response like: "Backend is running"
 
 ------------------------------------------------------------------------
 
-### 2. Open Frontend
-
-https://business-automation-pink-two.vercel.app/
-
+### 2. Start Frontend
+Open Fronten link
 ------------------------------------------------------------------------
 
 ### 3. Login
