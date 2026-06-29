@@ -11,7 +11,7 @@ reports, and manage reports through a secure dashboard.
 
 ## 🔗 Live Demo
 
-Frontend: [ business-automation-kg917a0ai-themartino.vercel.app/ ](business-automation-kg917a0ai-themartino.vercel.app/) 
+Frontend: business-automation-kg917a0ai-themartino.vercel.app/
 
 Backend API:[ https://business-automation-iyqi.onrender.com/ ](https://business-automation-iyqi.onrender.com/)
 
